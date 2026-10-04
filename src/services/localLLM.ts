@@ -1,4 +1,4 @@
-import { CreateMLCEngine, MLCEngine } from '@mlc-ai/web-llm';
+import type { MLCEngine } from '@mlc-ai/web-llm';
 import type { InterviewMessage, InterviewPhase, LLMConfig, Problem } from '../types/interview';
 
 export interface ProgressReport {
@@ -21,6 +21,7 @@ class LocalLLMService {
 
     this.isInitializing = true;
     try {
+      const { CreateMLCEngine } = await import('@mlc-ai/web-llm');
       this.engine = await CreateMLCEngine(modelId, {
         initProgressCallback: (report) => {
           onProgress?.({

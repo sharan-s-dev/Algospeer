@@ -9,21 +9,14 @@ class SpeechService {
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      this.synth = window.speechSynthesis;
-      this.loadVoices();
-      if (this.synth.onvoiceschanged !== undefined) {
-        this.synth.onvoiceschanged = () => this.loadVoices();
-      }
-    }
-
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition =
-        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        this.recognition = new SpeechRecognition();
-        this.recognition.continuous = true;
-        this.recognition.interimResults = true;
-        this.recognition.lang = 'en-US';
+      try {
+        this.synth = window.speechSynthesis;
+        this.loadVoices();
+        if (this.synth.onvoiceschanged !== undefined) {
+          this.synth.onvoiceschanged = () => this.loadVoices();
+        }
+      } catch (e) {
+        console.warn('SpeechSynthesis initialization notice:', e);
       }
     }
   }
@@ -120,6 +113,21 @@ class SpeechService {
     onResult: (transcript: string, isFinal: boolean) => void,
     onError?: (err: any) => void
   ) {
+    if (!this.recognition && typeof window !== 'undefined') {
+      try {
+        const SpeechRecognition =
+          (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (SpeechRecognition) {
+          this.recognition = new SpeechRecognition();
+          this.recognition.continuous = true;
+          this.recognition.interimResults = true;
+          this.recognition.lang = 'en-US';
+        }
+      } catch (err) {
+        console.warn('SpeechRecognition initialization error:', err);
+      }
+    }
+
     if (!this.recognition) {
       onError?.(new Error('Speech recognition is not supported in this browser.'));
       return;

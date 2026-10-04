@@ -1,10 +1,6 @@
+*This is a submission for the [Hacktoberfest Weekend Challenge: Build for a Friend](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01)*
+
 # AlgosPeer: An Offline, Local-Inference DSA Mock Interview Agent Built for My Roommate
-
-> **Engineered for peers and roommates preparing for early-career software engineering technical evaluations (FAANG, Big Tech, and high-growth tech startups).**
-
-🔗 **Repository:** [https://github.com/sharan-s-dev/Algospeer](https://github.com/sharan-s-dev/Algospeer)  
-🌐 **Live Demo:** [https://sharan-s-dev.github.io/Algospeer/](https://sharan-s-dev.github.io/Algospeer/)  
-**100% Offline & Private:** Zero cloud API keys required. Operates completely offline using client-side WebGPU (WebLLM), local Ollama/LM Studio endpoints, or an instant-execution offline heuristic expert engine.
 
 ---
 
