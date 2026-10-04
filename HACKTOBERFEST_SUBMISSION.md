@@ -32,7 +32,8 @@ Preparing for technical coding rounds is notorious for being high-stress and iso
 
 ## Demo
 
-- **Local Development / Web Access:** [http://localhost:5173/](http://localhost:5173/)
+- 🌐 **Live Deployed App:** [https://sharan-s-dev.github.io/Algospeer/](https://sharan-s-dev.github.io/Algospeer/)
+- **Local Development / Offline Access:** [http://localhost:5173/](http://localhost:5173/)
 - **Curated Interview Problem Bank:** 8 classic, high-frequency interview patterns (Two Sum, Valid Parentheses, Best Time to Buy and Sell Stock, Longest Substring Without Repeating Characters, Merge Intervals, Number of Islands, Coin Change, and Search in Rotated Sorted Array).
 - **Dual Perspective:** Candidates code in an uncluttered IDE while the interviewer / roommate HUD runs synchronously.
 
