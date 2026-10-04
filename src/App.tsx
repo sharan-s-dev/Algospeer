@@ -11,6 +11,7 @@ import { ScorecardModal } from './components/ScorecardModal';
 import { SettingsModal } from './components/SettingsModal';
 import { PROBLEMS } from './data/problems';
 import type {
+  InferenceBackend,
   InterviewMessage,
   InterviewPhase,
   InterviewScorecard,
@@ -24,19 +25,30 @@ import { runTests } from './services/codeRunner';
 import { localLLMService } from './services/localLLM';
 import { speechService } from './services/speechService';
 import { calculateScorecard } from './services/evaluator';
-import { BookOpen, Headphones, GitBranch, Terminal, Shield } from 'lucide-react';
+import { BookOpen, GitBranch, Headphones, Terminal } from 'lucide-react';
 
 const INITIAL_CONFIG: LLMConfig = {
-  backend: 'heuristic',
-  ollamaUrl: 'http://localhost:11434',
-  ollamaModel: 'llama3.2',
-  lmStudioUrl: 'http://localhost:1234',
-  lmStudioModel: 'local-model',
-  webLlmModel: 'Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC',
-  persona: 'supportive_mentor',
+  backend: (import.meta.env.VITE_GEMINI_API_KEY ? 'gemini' : 'heuristic') as InferenceBackend,
+  geminiApiKey: import.meta.env.VITE_GEMINI_API_KEY || '',
+  geminiModel: 'gemini-3.8-flash',
+  persona: 'roommate_peer',
   voiceEnabled: true,
   voicePitch: 1.0,
-  voiceRate: 1.0
+  voiceRate: 1.0,
+  friendProfile: {
+    name: 'Alex',
+    targetRole: 'Software Engineer',
+    targetCompany: 'Google',
+    prepNotes: 'Focus on verbalizing decisions out loud and testing edge cases.',
+    roommateRatings: {
+      clarification: 4,
+      approach: 4,
+      codeQuality: 4,
+      testing: 4,
+      communication: 4
+    },
+    roommateFeedback: 'Great practice round! Solid algorithmic approach.'
+  }
 };
 
 export function App() {
@@ -85,7 +97,23 @@ export function App() {
   const [config, setConfig] = useState<LLMConfig>(() => {
     try {
       const saved = localStorage.getItem('algospeer_config');
-      return saved ? JSON.parse(saved) : INITIAL_CONFIG;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        let model = parsed.geminiModel || 'gemini-3.8-flash';
+        if (model.includes('2.5') || model.includes('gemini-pro')) {
+          model = 'gemini-3.8-flash';
+        }
+        return {
+          ...INITIAL_CONFIG,
+          ...parsed,
+          geminiModel: model,
+          friendProfile: {
+            ...INITIAL_CONFIG.friendProfile,
+            ...(parsed.friendProfile || {})
+          }
+        };
+      }
+      return INITIAL_CONFIG;
     } catch {
       return INITIAL_CONFIG;
     }
@@ -229,8 +257,20 @@ export function App() {
           speechService.speak(alertMsg.text, config.persona, config.voiceRate, config.voicePitch);
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       setIsRunningTests(false);
+      setTestResults([
+        {
+          testId: 'engine-err',
+          description: 'Execution Engine Error',
+          passed: false,
+          input: '[]',
+          expected: 'Clean test execution',
+          actual: 'Execution Error',
+          executionTimeMs: 0,
+          error: `Sandbox execution error: ${err?.message || String(err)}`
+        }
+      ]);
     }
   };
 
@@ -276,10 +316,22 @@ export function App() {
       testResults,
       hintsUsed,
       Math.max(10, elapsed),
-      code
+      code,
+      config.friendProfile
     );
     setScorecard(computed);
     setIsScorecardOpen(true);
+  };
+
+  const handleSendRoommateMessage = (text: string) => {
+    const roommateMsg: InterviewMessage = {
+      id: `roommate-${Date.now()}`,
+      sender: 'roommate',
+      text,
+      timestamp: Date.now(),
+      phase
+    };
+    setMessages((prev) => [...prev, roommateMsg]);
   };
 
   const handleUnlockNextHint = () => {
@@ -438,11 +490,11 @@ export function App() {
         {/* Right items */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
-            <Shield className="w-3 h-3 text-slate-400" />
-            <span className="text-slate-300">100% Offline</span>
+            <BookOpen className="w-3 h-3 text-purple-400" />
+            <span className="text-slate-300">Friend: {config.friendProfile?.name || 'Peer'} ({config.friendProfile?.targetCompany || 'Top Tech'})</span>
           </div>
           <span className="text-slate-600">|</span>
-          <span className="text-slate-300">Engine: {config.backend.toUpperCase()}</span>
+          <span className="text-slate-300">Engine: {config.backend === 'gemini' ? (config.geminiModel || 'gemini-3.8-flash').toUpperCase() : 'OFFLINE'}</span>
         </div>
       </div>
 
@@ -464,6 +516,9 @@ export function App() {
         onClose={() => setIsRoommateMode(false)}
         problem={currentProblem}
         language={language}
+        friendProfile={config.friendProfile}
+        onUpdateFriendProfile={(updated) => handleSaveConfig({ ...config, friendProfile: updated })}
+        onSendRoommateMessage={handleSendRoommateMessage}
       />
 
       {/* Comprehensive Scorecard Modal */}
@@ -474,6 +529,9 @@ export function App() {
         problem={currentProblem}
         code={code}
         language={language}
+        config={config}
+        messages={messages}
+        testResults={testResults}
         onRestartRound={() => handleSelectProblem(currentProblem)}
       />
 

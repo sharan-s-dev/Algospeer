@@ -1,10 +1,27 @@
 export type InterviewPhase = 'CLARIFY' | 'APPROACH' | 'CODING' | 'TESTING' | 'DEBRIEF';
 
-export type InterviewerPersona = 'faang_bar_raiser' | 'supportive_mentor' | 'pragmatic_lead';
+export type InterviewerPersona = 'roommate_peer' | 'faang_bar_raiser' | 'supportive_mentor' | 'pragmatic_lead';
 
-export type InferenceBackend = 'webllm' | 'ollama' | 'lmstudio' | 'heuristic';
+export type InferenceBackend = 'gemini' | 'heuristic';
 
 export type ProgrammingLanguage = 'javascript' | 'python';
+
+export interface RoommateRatings {
+  clarification: number;
+  approach: number;
+  codeQuality: number;
+  testing: number;
+  communication: number;
+}
+
+export interface FriendProfile {
+  name: string;
+  targetRole: string;
+  targetCompany: string;
+  prepNotes: string;
+  roommateRatings: RoommateRatings;
+  roommateFeedback: string;
+}
 
 export interface TestCase {
   id: string;
@@ -62,7 +79,7 @@ export interface Problem {
 
 export interface InterviewMessage {
   id: string;
-  sender: 'candidate' | 'interviewer' | 'system';
+  sender: 'candidate' | 'interviewer' | 'system' | 'roommate';
   text: string;
   timestamp: number;
   phase?: InterviewPhase;
@@ -93,19 +110,18 @@ export interface InterviewScorecard {
   testCasesPassed: number;
   totalTestCases: number;
   summary: string;
+  friendProfile?: FriendProfile;
 }
 
 export interface LLMConfig {
   backend: InferenceBackend;
-  ollamaUrl: string;
-  ollamaModel: string;
-  lmStudioUrl: string;
-  lmStudioModel: string;
-  webLlmModel: string;
+  geminiApiKey?: string;
+  geminiModel?: string;
   persona: InterviewerPersona;
   voiceEnabled: boolean;
   voicePitch: number;
   voiceRate: number;
+  friendProfile: FriendProfile;
 }
 
 export interface TestExecutionResult {

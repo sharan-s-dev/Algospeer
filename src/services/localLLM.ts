@@ -1,86 +1,34 @@
-import type { MLCEngine } from '@mlc-ai/web-llm';
 import type { InterviewMessage, InterviewPhase, LLMConfig, Problem } from '../types/interview';
 
-export interface ProgressReport {
-  text: string;
-  progress: number;
-}
-
 class LocalLLMService {
-  private engine: MLCEngine | null = null;
-  private currentWebLlmModel: string | null = null;
-  private isInitializing = false;
-
-  public async initWebLLM(
-    modelId: string,
-    onProgress?: (report: ProgressReport) => void
-  ): Promise<boolean> {
-    if (this.engine && this.currentWebLlmModel === modelId) {
-      return true;
+  public async checkGeminiConnection(apiKey: string): Promise<{ ok: boolean; models: string[]; error?: string }> {
+    if (!apiKey?.trim()) {
+      return { ok: false, models: [], error: 'API key is required' };
     }
-
-    this.isInitializing = true;
     try {
-      const { CreateMLCEngine } = await import('@mlc-ai/web-llm');
-      this.engine = await CreateMLCEngine(modelId, {
-        initProgressCallback: (report) => {
-          onProgress?.({
-            text: report.text,
-            progress: report.progress
-          });
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey.trim()}`,
+        {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
         }
-      });
-      this.currentWebLlmModel = modelId;
-      this.isInitializing = false;
-      return true;
-    } catch (err) {
-      console.error('Failed to initialize WebLLM engine:', err);
-      this.isInitializing = false;
-      throw err;
-    }
-  }
-
-  public getWebLLMStatus(): { initialized: boolean; model: string | null; initializing: boolean } {
-    return {
-      initialized: !!this.engine,
-      model: this.currentWebLlmModel,
-      initializing: this.isInitializing
-    };
-  }
-
-  public async checkOllamaConnection(url: string): Promise<{ ok: boolean; models: string[] }> {
-    try {
-      const trimmedUrl = url.replace(/\/$/, '');
-      const response = await fetch(`${trimmedUrl}/api/tags`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      });
+      );
       if (response.ok) {
         const data = await response.json();
-        const models = (data.models || []).map((m: any) => m.name);
+        const models = (data.models || [])
+          .map((m: any) => m.name?.replace('models/', ''))
+          .filter((name: string) => name && name.includes('gemini'));
         return { ok: true, models };
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        return {
+          ok: false,
+          models: [],
+          error: errData.error?.message || `HTTP ${response.status}: ${response.statusText}`
+        };
       }
-      return { ok: false, models: [] };
-    } catch (e) {
-      return { ok: false, models: [] };
-    }
-  }
-
-  public async checkLMStudioConnection(url: string): Promise<{ ok: boolean; models: string[] }> {
-    try {
-      const trimmedUrl = url.replace(/\/$/, '');
-      const response = await fetch(`${trimmedUrl}/v1/models`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const models = (data.data || []).map((m: any) => m.id);
-        return { ok: true, models };
-      }
-      return { ok: false, models: [] };
-    } catch (e) {
-      return { ok: false, models: [] };
+    } catch (e: any) {
+      return { ok: false, models: [], error: e.message || 'Connection failed' };
     }
   }
 
@@ -88,10 +36,17 @@ class LocalLLMService {
     problem: Problem,
     phase: InterviewPhase,
     persona: string,
-    currentCode: string
+    currentCode: string,
+    friendName?: string,
+    targetCompany?: string
   ): string {
+    const friendContext = friendName ? `Candidate Name: ${friendName}. ` : '';
+    const targetContext = targetCompany ? `Target Company/Role: ${targetCompany}. ` : '';
+
     const personaStyle =
-      persona === 'faang_bar_raiser'
+      persona === 'roommate_peer'
+        ? `You are ${friendName || "the candidate's"} supportive college roommate and peer mock interviewer. You are practicing together in the dorm to help them land their dream job${targetCompany ? ' at ' + targetCompany : ''}. Your tone is warm, collaborative, sharp, and encouraging with realistic college peer banter. You gently nudge them to think aloud, call out edge cases, and keep interview anxiety low.`
+        : persona === 'faang_bar_raiser'
         ? 'You are a rigorous FAANG Bar Raiser interviewer. You are formal, direct, push hard on optimal Big-O bounds, mathematical invariants, and zero tolerance for sloppy edge-case assumptions.'
         : persona === 'supportive_mentor'
         ? 'You are an encouraging, thoughtful senior mentor. You ask collaborative Socratic questions, gently nudge the candidate when they are stuck, and celebrate good observations.'
@@ -107,6 +62,7 @@ class LocalLLMService {
 
     return `
 ${personaStyle}
+${friendContext}${targetContext}
 
 You are conducting a technical Data Structures & Algorithms mock interview for an early-career software engineer.
 Problem: "${problem.title}" (${problem.difficulty})
@@ -144,107 +100,102 @@ CRITICAL INTERVIEWER RULES:
     config: LLMConfig,
     onToken?: (token: string) => void
   ): Promise<string> {
-    // 1. Try WebLLM if configured
-    if (config.backend === 'webllm' && this.engine) {
+    // 0. Try Google Gemini (AI Studio)
+    if (config.backend === 'gemini') {
+      const apiKey = config.geminiApiKey?.trim();
+      if (!apiKey) {
+        return '⚠️ Gemini API key is missing. Please click the Settings gear icon (⚙️) in the top header, select Google Gemini, and paste your Google AI Studio API key.';
+      }
       try {
-        const sysPrompt = this.buildSystemPrompt(problem, phase, config.persona, currentCode);
-        const chatHistory = [
-          { role: 'system', content: sysPrompt },
-          ...messages.slice(-8).map(m => ({
-            role: m.sender === 'interviewer' ? 'assistant' : 'user',
-            content: m.text
-          }))
-        ];
+        const sysPrompt = this.buildSystemPrompt(
+          problem,
+          phase,
+          config.persona,
+          currentCode,
+          config.friendProfile?.name,
+          config.friendProfile?.targetCompany
+        );
 
-        const response = await this.engine.chat.completions.create({
-          messages: chatHistory as any,
-          temperature: 0.6,
-          max_tokens: 300,
-          stream: !!onToken
-        });
+        // Auto-upgrade legacy deprecated models to gemini-3.8-flash
+        let model = config.geminiModel || 'gemini-3.8-flash';
+        if (model.includes('2.5') || model.includes('gemini-pro')) {
+          model = 'gemini-3.8-flash';
+        }
 
-        if (onToken && (response as any)[Symbol.asyncIterator]) {
-          let fullText = '';
-          for await (const chunk of response as any) {
-            const delta = chunk.choices[0]?.delta?.content || '';
-            fullText += delta;
-            onToken(delta);
+        const validMsgs = messages
+          .filter(m => m.sender === 'candidate' || m.sender === 'interviewer' || m.sender === 'roommate')
+          .slice(-12);
+
+        const chatContents = validMsgs.map(m => {
+          let text = m.text;
+          if (m.sender === 'roommate') {
+            text = `[Roommate Note / Live Co-Pilot Hint]: ${m.text}`;
           }
-          return fullText;
-        } else {
-          return (response as any).choices[0]?.message?.content || '';
-        }
-      } catch (err) {
-        console.warn('WebLLM generation error, falling back to heuristic:', err);
-      }
-    }
-
-    // 2. Try Ollama local endpoint
-    if (config.backend === 'ollama') {
-      try {
-        const sysPrompt = this.buildSystemPrompt(problem, phase, config.persona, currentCode);
-        const chatHistory = [
-          { role: 'system', content: sysPrompt },
-          ...messages.slice(-8).map(m => ({
-            role: m.sender === 'interviewer' ? 'assistant' : 'user',
-            content: m.text
-          }))
-        ];
-
-        const res = await fetch(`${config.ollamaUrl.replace(/\/$/, '')}/api/chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: config.ollamaModel || 'llama3.2',
-            messages: chatHistory,
-            stream: false,
-            options: { temperature: 0.6 }
-          })
+          return {
+            role: m.sender === 'interviewer' ? 'model' : 'user',
+            parts: [{ text }]
+          };
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          return data.message?.content || '';
+        if (chatContents.length > 0 && chatContents[0].role === 'model') {
+          chatContents.unshift({
+            role: 'user',
+            parts: [{ text: `I am ready for the technical mock interview on "${problem.title}".` }]
+          });
         }
-      } catch (err) {
-        console.warn('Ollama connection failed, falling back to heuristic:', err);
+
+        if (chatContents.length === 0) {
+          chatContents.push({
+            role: 'user',
+            parts: [{ text: `Hello, let's start the interview on "${problem.title}".` }]
+          });
+        }
+
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              system_instruction: {
+                parts: [{ text: sysPrompt }]
+              },
+              contents: chatContents,
+              generationConfig: {
+                temperature: 0.65,
+                maxOutputTokens: 400
+              }
+            })
+          }
+        );
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          const errMsg = errData.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+          throw new Error(errMsg);
+        }
+
+        const data = await res.json();
+        const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        if (candidateText) {
+          if (onToken) onToken(candidateText);
+          return candidateText;
+        }
+      } catch (err: any) {
+        console.error('Gemini generation failed:', err);
+        return `⚠️ Google Gemini inference error: ${err.message}. Please verify your API key and connection in Settings (⚙️).`;
       }
     }
 
-    // 3. Try LM Studio
-    if (config.backend === 'lmstudio') {
-      try {
-        const sysPrompt = this.buildSystemPrompt(problem, phase, config.persona, currentCode);
-        const chatHistory = [
-          { role: 'system', content: sysPrompt },
-          ...messages.slice(-8).map(m => ({
-            role: m.sender === 'interviewer' ? 'assistant' : 'user',
-            content: m.text
-          }))
-        ];
-
-        const res = await fetch(`${config.lmStudioUrl.replace(/\/$/, '')}/v1/chat/completions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: config.lmStudioModel || 'local-model',
-            messages: chatHistory,
-            temperature: 0.6,
-            max_tokens: 300
-          })
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          return data.choices[0]?.message?.content || '';
-        }
-      } catch (err) {
-        console.warn('LM Studio connection failed, falling back to heuristic:', err);
-      }
-    }
-
-    // 4. Built-in Offline Expert Heuristic Engine
-    return this.generateHeuristicResponse(messages, problem, phase, currentCode, config.persona);
+    // 1. Built-in Offline Expert Heuristic Engine
+    return this.generateHeuristicResponse(
+      messages,
+      problem,
+      phase,
+      currentCode,
+      config.persona,
+      config.friendProfile?.name
+    );
   }
 
   /**
@@ -257,14 +208,19 @@ CRITICAL INTERVIEWER RULES:
     problem: Problem,
     phase: InterviewPhase,
     currentCode: string,
-    persona: string
+    persona: string,
+    friendName?: string
   ): string {
     const lastUserMsg = messages
-      .filter(m => m.sender === 'candidate')
+      .filter(m => m.sender === 'candidate' || m.sender === 'roommate')
       .slice(-1)[0]?.text.toLowerCase() || '';
 
+    const name = friendName || 'there';
+
     const tonePrefix =
-      persona === 'faang_bar_raiser'
+      persona === 'roommate_peer'
+        ? `Hey ${name}! `
+        : persona === 'faang_bar_raiser'
         ? ''
         : persona === 'supportive_mentor'
         ? 'Great start! '
@@ -332,6 +288,103 @@ CRITICAL INTERVIEWER RULES:
 
     // 5. DEBRIEF PHASE
     return `Great work completing this interview round! Let's examine your overall performance scorecard. Your communication, choice of algorithm, and code modularity were tested against standard early-career benchmarks. Click 'View Complete Scorecard' to inspect your rubric breakdown and feedback.`;
+  }
+
+  public async generateScorecardCritique(
+    problem: Problem,
+    currentCode: string,
+    messages: InterviewMessage[],
+    testResults: any[],
+    config: LLMConfig
+  ): Promise<string> {
+    if (config.backend === 'gemini' && config.geminiApiKey?.trim()) {
+      const apiKey = config.geminiApiKey.trim();
+      const model = config.geminiModel || 'gemini-3.8-flash';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+      const prompt = `
+You are a Principal Software Engineer & Bar Raiser conducting an in-depth, authentic technical interview debrief.
+
+PROBLEM:
+Title: "${problem.title}" (${problem.difficulty})
+Category: ${problem.category}
+Target Optimal Complexity: Time ${problem.optimalComplexity.time}, Space ${problem.optimalComplexity.space}
+Problem Summary: ${problem.description.slice(0, 300)}...
+
+CANDIDATE SUBMITTED CODE:
+\`\`\`
+${currentCode || '(no code submitted)'}
+\`\`\`
+
+TEST SUITE RESULTS:
+${testResults.map((t: any, i: number) => `Test ${i + 1} (${t.passed ? 'PASSED' : 'FAILED'}): input=${t.input} expected=${t.expected} actual=${t.actual}`).join('\n')}
+
+CONVERSATION TRANSCRIPT:
+${messages.filter(m => m.sender !== 'system').slice(-10).map(m => `[${m.sender.toUpperCase()}]: ${m.text}`).join('\n')}
+
+CANDIDATE INFO:
+Name: ${config.friendProfile?.name || 'Candidate'}
+Target Role/Company: ${config.friendProfile?.targetCompany || 'Top Tech Roles'}
+
+CONDUCT A THOROUGH EVALUATION:
+Write a candid, highly specific engineering debrief in Markdown:
+### 1. Executive Verdict & Hiring Recommendation
+Provide your official recommendation: **Strong Hire**, **Hire**, **Lean Hire**, **Lean No Hire**, or **No Hire** with a direct 2-3 sentence justification based on their code and problem-solving.
+
+### 2. Deep-Dive Code & Complexity Analysis
+- Analyze the candidate's actual written implementation. Cite their variable names and data structure choices.
+- Determine the actual Time and Space Big-O complexity achieved vs optimal (${problem.optimalComplexity.time} / ${problem.optimalComplexity.space}).
+- Note any edge-case oversights, clean idioms, or redundant allocations.
+
+### 3. Interview Communication & Problem Solving
+- How well did the candidate think aloud and clarify assumptions before writing code?
+
+### 4. Actionable Next Steps
+- 2-3 precise algorithmic patterns or LeetCode questions they should practice next.
+`;
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.3, maxOutputTokens: 1200 }
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) return text;
+        }
+      } catch (e) {
+        console.error('Gemini debrief error:', e);
+      }
+    }
+
+    // Heuristic deep dive review if Gemini key is missing or offline
+    const passed = testResults.filter((t: any) => t.passed).length;
+    const total = testResults.length || problem.testCases.length;
+    const rate = total > 0 ? Math.round((passed / total) * 100) : 0;
+    const candidateName = config.friendProfile?.name || 'Candidate';
+    const targetComp = config.friendProfile?.targetCompany || 'Top Tech Roles';
+
+    return `### 1. Executive Verdict & Recommendation
+**Recommendation:** ${rate >= 80 ? '**Hire**' : rate >= 50 ? '**Lean Hire**' : '**Lean No Hire**'}  
+${candidateName} tackled "${problem.title}" for ${targetComp}. With a test pass rate of **${rate}%** (${passed}/${total} assertions), the candidate demonstrated ${rate >= 80 ? 'a solid grasp of algorithmic invariants and clean control flow.' : 'promising problem solving but needs to drill edge-case verification and complexity optimization.'}
+
+### 2. Code & Algorithmic Analysis
+- **Submitted Implementation:** The code uses ${currentCode.includes('Map') || currentCode.includes('dict') || currentCode.includes('{}') ? 'hash-based indexing for sub-linear lookups' : 'standard array iterations'}.
+- **Complexity Assessment:** Target is **Time ${problem.optimalComplexity.time}, Space ${problem.optimalComplexity.space}**. ${currentCode.split('for').length > 2 || currentCode.split('while').length > 2 ? '⚠️ Detected multiple loops; verify if nested iterations increase complexity to O(N²).' : 'Single-pass or logarithmic strategy observed.'}
+- **Code Cleanliness:** ${currentCode.length > 100 ? 'Good functional modularity with distinct pointer/variable separation.' : 'Concise script; ensure edge cases like empty inputs, single elements, and duplicates are explicitly guarded.'}
+
+### 3. Communication & Thinking Aloud
+- Candidate exchanged ${messages.filter(m => m.sender === 'candidate').length} messages during the round. Proactive clarification on boundary constraints is essential to standing out in FAANG-level loops.
+
+### 4. Actionable Next Steps
+- Practice related **${problem.category}** patterns: *${problem.patterns.join(', ')}*.
+- Trace boundary test cases manually on a whiteboard before running automated test assertions.`;
   }
 }
 

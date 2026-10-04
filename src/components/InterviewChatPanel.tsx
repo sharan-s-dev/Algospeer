@@ -134,6 +134,12 @@ export const InterviewChatPanel: React.FC<InterviewChatPanelProps> = ({
 
   const getPersonaDetails = () => {
     switch (config.persona) {
+      case 'roommate_peer':
+        return {
+          name: config.friendProfile?.name ? `${config.friendProfile.name} (Roommate)` : 'Roommate Co-Pilot',
+          role: 'Peer Interviewer',
+          tagColor: 'text-purple-400 bg-[#1c152b] border-[#3b2d56]'
+        };
       case 'faang_bar_raiser':
         return { name: 'Alex Vance', role: 'Staff Engineer (Bar Raiser)', tagColor: 'text-rose-400 bg-[#281418] border-[#5e1927]' };
       case 'supportive_mentor':
@@ -224,6 +230,26 @@ export const InterviewChatPanel: React.FC<InterviewChatPanelProps> = ({
               >
                 <span className="text-slate-500 font-mono">system:</span>
                 <span>{msg.text}</span>
+              </div>
+            );
+          }
+
+          if (msg.sender === 'roommate') {
+            return (
+              <div
+                key={msg.id}
+                className="rounded-lg p-3 text-xs leading-relaxed border bg-[#181226] border-[#3f285e] my-1.5 shadow-md"
+              >
+                <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-[#2a1b42] text-[10.5px] font-mono text-purple-300">
+                  <span className="font-bold flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+                    <span>ROOMMATE CO-PILOT</span>
+                  </span>
+                  <span className="text-slate-500 text-[10px]">{formatTime(msg.timestamp)}</span>
+                </div>
+                <div className="text-slate-100 font-sans text-[12.5px] leading-relaxed">
+                  {msg.text}
+                </div>
               </div>
             );
           }

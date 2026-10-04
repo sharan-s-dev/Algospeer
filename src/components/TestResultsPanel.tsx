@@ -263,7 +263,7 @@ export const TestResultsPanel: React.FC<TestResultsPanelProps> = ({
                     currentResult.passed ? 'text-emerald-400' : 'text-rose-400'
                   }`}
                 >
-                  {currentResult.actual}
+                  {currentResult.actual || 'undefined'}
                 </div>
               </div>
             </div>

@@ -8,7 +8,6 @@ import {
   Settings as SettingsIcon,
   Award,
   Users,
-  User,
   Lightbulb,
   FileCode2,
   ChevronDown,
@@ -74,16 +73,11 @@ export const Header: React.FC<HeaderProps> = ({
   ];
 
   const getBackendBadge = () => {
-    switch (config.backend) {
-      case 'webllm':
-        return { label: 'WebLLM / WebGPU', dotColor: 'bg-emerald-400' };
-      case 'ollama':
-        return { label: `Ollama (${config.ollamaModel || 'local'})`, dotColor: 'bg-blue-400' };
-      case 'lmstudio':
-        return { label: 'LM Studio / LocalAI', dotColor: 'bg-amber-400' };
-      default:
-        return { label: 'Local Heuristic Engine', dotColor: 'bg-emerald-400' };
+    if (config.backend === 'gemini') {
+      const model = (config.geminiModel || 'gemini-3.8-flash').replace('gemini-', '');
+      return { label: `Gemini ${model}`, dotColor: 'bg-indigo-400' };
     }
+    return { label: 'Local Offline Engine', dotColor: 'bg-emerald-400' };
   };
 
   const backendInfo = getBackendBadge();
@@ -223,27 +217,18 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
-        {/* Solo vs Roommate Mode Toggle */}
+        {/* Roommate Co-Pilot HUD */}
         <button
           onClick={onToggleRoommateMode}
-          className={`btn ${
+          className={`btn text-xs flex items-center gap-1.5 shadow-sm transition-all ${
             isRoommateMode
-              ? 'bg-[#221c32] text-purple-300 border-[#3d2f5a]'
-              : 'btn-secondary text-xs'
+              ? 'bg-purple-950 text-purple-200 border-purple-700 ring-1 ring-purple-500/50'
+              : 'bg-[#1e152d] hover:bg-[#281b3c] text-purple-300 border-[#3f295e]'
           }`}
-          title="Toggle Roommate Co-Pilot HUD"
+          title="Open Roommate Co-Pilot HUD (Interviewer cheat sheet & live interventions)"
         >
-          {isRoommateMode ? (
-            <>
-              <Users className="w-3.5 h-3.5 text-purple-400" />
-              <span>Roommate HUD</span>
-            </>
-          ) : (
-            <>
-              <User className="w-3.5 h-3.5 text-slate-400" />
-              <span>Solo Candidate</span>
-            </>
-          )}
+          <Users className="w-3.5 h-3.5 text-purple-400" />
+          <span>Roommate Co-Pilot</span>
         </button>
 
         {/* Progressive Hints */}

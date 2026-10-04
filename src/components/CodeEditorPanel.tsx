@@ -63,7 +63,7 @@ export const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({
 
           {/* Compiler Version Info */}
           <span className="text-[10px] font-mono text-slate-400 px-1.5 py-0.5 rounded bg-[#12131b] border border-[#1b1d28] hidden sm:inline">
-            {language === 'javascript' ? 'v8 / Node 20.x' : 'Pyodide 3.12'}
+            {language === 'javascript' ? 'v8 / Node 20.x' : 'Python 3.x (In-Browser)'}
           </span>
 
           {/* Language Switcher */}
