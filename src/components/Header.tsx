@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Brain,
+  Code2,
   Clock,
   Play,
   Pause,
@@ -11,7 +11,8 @@ import {
   User,
   Lightbulb,
   FileCode2,
-  ChevronDown
+  ChevronDown,
+  CheckCircle2
 } from 'lucide-react';
 import type { InterviewPhase, LLMConfig, Problem } from '../types/interview';
 import { PROBLEMS } from '../data/problems';
@@ -67,41 +68,39 @@ export const Header: React.FC<HeaderProps> = ({
   const phases: { id: InterviewPhase; label: string; number: number }[] = [
     { id: 'CLARIFY', label: '1. Clarify', number: 1 },
     { id: 'APPROACH', label: '2. Approach', number: 2 },
-    { id: 'CODING', label: '3. Coding', number: 3 },
-    { id: 'TESTING', label: '4. Testing', number: 4 },
+    { id: 'CODING', label: '3. Implement', number: 3 },
+    { id: 'TESTING', label: '4. Verify', number: 4 },
     { id: 'DEBRIEF', label: '5. Debrief', number: 5 }
   ];
 
   const getBackendBadge = () => {
     switch (config.backend) {
       case 'webllm':
-        return { label: 'WebLLM (WebGPU)', color: 'text-cyan-400 border-cyan-800/60 bg-cyan-950/40' };
+        return { label: 'WebLLM / WebGPU', dotColor: 'bg-emerald-400' };
       case 'ollama':
-        return { label: `Ollama (${config.ollamaModel || 'local'})`, color: 'text-violet-400 border-violet-800/60 bg-violet-950/40' };
+        return { label: `Ollama (${config.ollamaModel || 'local'})`, dotColor: 'bg-blue-400' };
       case 'lmstudio':
-        return { label: 'LM Studio', color: 'text-amber-400 border-amber-800/60 bg-amber-950/40' };
+        return { label: 'LM Studio / LocalAI', dotColor: 'bg-amber-400' };
       default:
-        return { label: 'Local Heuristic AI', color: 'text-emerald-400 border-emerald-800/60 bg-emerald-950/40' };
+        return { label: 'Local Heuristic Engine', dotColor: 'bg-emerald-400' };
     }
   };
 
   const backendInfo = getBackendBadge();
 
   return (
-    <header className="h-14 border-b border-[#1c2638] bg-[#0d131f]/95 backdrop-blur-md px-4 flex items-center justify-between z-30 select-none">
-      {/* Left: Brand & Problem Picker */}
+    <header className="h-12 border-b border-[#1c1e28] bg-[#0c0d12] px-3.5 flex items-center justify-between z-30 select-none">
+      {/* Left: Brand & Problem Selector */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 pr-3 border-r border-[#1c2638]">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-900/30">
-            <Brain className="w-5 h-5 text-white" />
+        <div className="flex items-center gap-2 pr-3 border-r border-[#1c1e28]">
+          <div className="w-7 h-7 rounded-md bg-[#161722] border border-[#262838] flex items-center justify-center text-slate-200">
+            <Code2 className="w-4 h-4 text-emerald-400" />
           </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-sm tracking-tight text-white">AlgosPeer</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
-                Local
-              </span>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-xs tracking-tight text-white font-sans">AlgosPeer</span>
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#161722] text-slate-400 border border-[#222434]">
+              v1.0
+            </span>
           </div>
         </div>
 
@@ -109,9 +108,9 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative">
           <button
             onClick={() => setIsProblemDropdownOpen(!isProblemDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#141d2e] hover:bg-[#1a253a] border border-[#1f2b40] text-xs font-medium text-slate-200 transition-colors"
+            className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#13141c] hover:bg-[#1a1c27] border border-[#20222f] text-xs font-medium text-slate-200 transition-colors"
           >
-            <span className="max-w-[160px] truncate">{currentProblem.title}</span>
+            <span className="max-w-[170px] truncate text-xs">{currentProblem.title}</span>
             <span
               className={`badge text-[10px] ${
                 currentProblem.difficulty === 'Easy'
@@ -123,64 +122,73 @@ export const Header: React.FC<HeaderProps> = ({
             >
               {currentProblem.difficulty}
             </span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
           </button>
 
           {isProblemDropdownOpen && (
             <div
-              className="absolute left-0 top-full mt-1.5 w-72 max-h-80 overflow-y-auto rounded-xl bg-[#0f1726] border border-[#223048] shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100"
+              className="absolute left-0 top-full mt-1.5 w-80 max-h-84 overflow-y-auto rounded-lg bg-[#111219] border border-[#242738] shadow-2xl p-1 z-50"
               onClick={() => setIsProblemDropdownOpen(false)}
             >
-              <div className="text-[11px] font-semibold text-slate-400 px-2 py-1 uppercase tracking-wider">
-                Select Interview Problem
+              <div className="text-[10.5px] font-mono uppercase tracking-wider text-slate-400 px-2.5 py-1.5 border-b border-[#1c1e2a] flex items-center justify-between">
+                <span>Select Interview Problem</span>
+                <span>{PROBLEMS.length} Available</span>
               </div>
-              {PROBLEMS.map((prob) => (
-                <div
-                  key={prob.id}
-                  onClick={() => onSelectProblem(prob)}
-                  className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
-                    prob.id === currentProblem.id
-                      ? 'bg-cyan-500/15 text-cyan-300 font-semibold'
-                      : 'hover:bg-[#172338] text-slate-300'
-                  }`}
-                >
-                  <div className="truncate pr-2 text-xs">
-                    <div>{prob.title}</div>
-                    <div className="text-[10px] text-slate-500">{prob.category}</div>
-                  </div>
-                  <span
-                    className={`badge text-[10px] ${
-                      prob.difficulty === 'Easy'
-                        ? 'badge-easy'
-                        : prob.difficulty === 'Medium'
-                        ? 'badge-medium'
-                        : 'badge-hard'
-                    }`}
-                  >
-                    {prob.difficulty}
-                  </span>
-                </div>
-              ))}
+              <div className="py-1">
+                {PROBLEMS.map((prob) => {
+                  const isSelected = prob.id === currentProblem.id;
+                  return (
+                    <div
+                      key={prob.id}
+                      onClick={() => onSelectProblem(prob)}
+                      className={`flex items-center justify-between px-2.5 py-1.5 rounded-md cursor-pointer text-xs transition-colors ${
+                        isSelected
+                          ? 'bg-[#1b1e2a] text-white font-medium border border-[#2c3044]'
+                          : 'hover:bg-[#161722] text-slate-300'
+                      }`}
+                    >
+                      <div className="truncate pr-2">
+                        <div className="flex items-center gap-1.5">
+                          {isSelected && <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />}
+                          <span className="truncate">{prob.title}</span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">{prob.category}</div>
+                      </div>
+                      <span
+                        className={`badge text-[10px] shrink-0 ${
+                          prob.difficulty === 'Easy'
+                            ? 'badge-easy'
+                            : prob.difficulty === 'Medium'
+                            ? 'badge-medium'
+                            : 'badge-hard'
+                        }`}
+                      >
+                        {prob.difficulty}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Backend status pill */}
+        {/* Engine status indicator */}
         <div
           onClick={onOpenSettings}
-          title="Click to configure local inference"
-          className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-medium cursor-pointer transition-all hover:scale-105 ${backendInfo.color}`}
+          title="Configure local inference & voice engine"
+          className="hidden md:flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#13141c] hover:bg-[#1a1c27] border border-[#20222f] text-[11px] text-slate-300 cursor-pointer font-mono transition-colors"
         >
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 pulsing-indicator" />
+          <span className={`w-1.5 h-1.5 rounded-full ${backendInfo.dotColor}`} />
           <span>{backendInfo.label}</span>
         </div>
       </div>
 
-      {/* Center: Phase Pipeline Stepper */}
-      <div className="hidden lg:flex items-center gap-1 bg-[#0b101c] p-1 rounded-xl border border-[#1b2538]">
+      {/* Center: Phase Stepper (Segmented Control) */}
+      <div className="hidden lg:flex items-center bg-[#101118] p-0.5 rounded-md border border-[#1e202c]">
         {phases.map((p) => {
           const isActive = phase === p.id;
-          const isPassed = phases.findIndex(x => x.id === phase) > phases.findIndex(x => x.id === p.id);
+          const isPassed = phases.findIndex((x) => x.id === phase) > phases.findIndex((x) => x.id === p.id);
           return (
             <button
               key={p.id}
@@ -193,22 +201,22 @@ export const Header: React.FC<HeaderProps> = ({
         })}
       </div>
 
-      {/* Right: Timer, Mode Switch, Actions */}
+      {/* Right: Timer, Interview Mode, Modals */}
       <div className="flex items-center gap-2">
-        {/* Countdown Timer */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#111929] border border-[#1d293d] text-xs font-mono text-slate-300">
-          <Clock className="w-3.5 h-3.5 text-cyan-400" />
-          <span className="font-semibold">{formatTimer(timerSeconds)}</span>
+        {/* Stopwatch Timer */}
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#12131b] border border-[#20222f] text-xs font-mono text-slate-300">
+          <Clock className="w-3.5 h-3.5 text-slate-400" />
+          <span className="font-semibold tracking-wider">{formatTimer(timerSeconds)}</span>
           <button
             onClick={onToggleTimer}
             title={isTimerRunning ? 'Pause timer' : 'Start timer'}
-            className="text-slate-400 hover:text-white p-0.5 rounded transition-colors"
+            className="text-slate-400 hover:text-white p-0.5 rounded transition-colors ml-0.5"
           >
             {isTimerRunning ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
           </button>
           <button
             onClick={onResetTimer}
-            title="Reset timer (45m)"
+            title="Reset timer (45:00)"
             className="text-slate-400 hover:text-white p-0.5 rounded transition-colors"
           >
             <RotateCcw className="w-3 h-3" />
@@ -220,25 +228,25 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={onToggleRoommateMode}
           className={`btn ${
             isRoommateMode
-              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-purple-900/30'
+              ? 'bg-[#221c32] text-purple-300 border-[#3d2f5a]'
               : 'btn-secondary text-xs'
           }`}
-          title="Toggle Roommate / Peer Co-Pilot Mode"
+          title="Toggle Roommate Co-Pilot HUD"
         >
           {isRoommateMode ? (
             <>
-              <Users className="w-3.5 h-3.5" />
+              <Users className="w-3.5 h-3.5 text-purple-400" />
               <span>Roommate HUD</span>
             </>
           ) : (
             <>
               <User className="w-3.5 h-3.5 text-slate-400" />
-              <span>Solo AI</span>
+              <span>Solo Candidate</span>
             </>
           )}
         </button>
 
-        {/* Hints Ladder Button */}
+        {/* Progressive Hints */}
         <button
           onClick={onOpenHints}
           className="btn btn-secondary text-xs relative"
@@ -247,37 +255,37 @@ export const Header: React.FC<HeaderProps> = ({
           <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
           <span>Hints</span>
           {hintsUsed > 0 && (
-            <span className="w-4 h-4 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] flex items-center justify-center font-bold">
+            <span className="ml-0.5 px-1 rounded bg-[#271e11] text-amber-300 border border-[#854d0e] text-[10px] font-mono">
               {hintsUsed}
             </span>
           )}
         </button>
 
-        {/* Whiteboard / Scratchpad Toggle */}
+        {/* Scratchpad Whiteboard */}
         <button
           onClick={onToggleWhiteboard}
-          className={`btn text-xs ${isWhiteboardOpen ? 'btn-primary' : 'btn-secondary'}`}
+          className={`btn text-xs ${isWhiteboardOpen ? 'bg-[#1e212c] text-white border-[#2e3243]' : 'btn-secondary'}`}
           title="Toggle scratchpad / ASCII whiteboard"
         >
-          <FileCode2 className="w-3.5 h-3.5" />
+          <FileCode2 className="w-3.5 h-3.5 text-slate-400" />
           <span className="hidden sm:inline">Whiteboard</span>
         </button>
 
-        {/* End Interview & Scorecard Button */}
+        {/* Evaluation Scorecard */}
         <button
           onClick={onOpenScorecard}
-          className="btn btn-accent text-xs"
-          title="Complete round & evaluate rubric scorecard"
+          className="btn btn-primary text-xs"
+          title="Open interview evaluation rubric scorecard"
         >
-          <Award className="w-3.5 h-3.5" />
+          <Award className="w-3.5 h-3.5 text-amber-400" />
           <span>Scorecard</span>
         </button>
 
-        {/* Settings Button */}
+        {/* Settings */}
         <button
           onClick={onOpenSettings}
           className="btn btn-ghost p-1.5 text-slate-400 hover:text-white"
-          title="Configure local inference & voice"
+          title="Engine & voice settings"
         >
           <SettingsIcon className="w-4 h-4" />
         </button>

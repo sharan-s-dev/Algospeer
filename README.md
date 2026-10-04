@@ -82,7 +82,7 @@ To ensure any student with an older laptop or integrated GPU can immediately pra
 - **Frontend Stack:** React 19, TypeScript, Vite, Tailwind CSS, PostCSS.
 - **Code Editor:** CodeMirror 6 (`@uiw/react-codemirror`) customized with One Dark theme, line numbers, bracket auto-closing, and `Ctrl + Enter` test triggers.
 - **Audio & Voice:** Browser-native Web Speech API for zero-latency speech synthesis with customizable pitch/speed and real-time microphone transcript streaming.
-- **Visuals:** Dark mode IDE aesthetics, glassmorphic panels, glowing status pills, soundwave audio animations, and `canvas-confetti`.
+- **Visuals & UX:** Production-grade developer workbench (Linear/CoderPad dark engineering palette, tactile controls, JetBrains Mono typography, Unix execution terminal with diff inspection, and VS Code bottom status bar).
 
 ---
 

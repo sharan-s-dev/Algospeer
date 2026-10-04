@@ -24,7 +24,7 @@ import { runTests } from './services/codeRunner';
 import { localLLMService } from './services/localLLM';
 import { speechService } from './services/speechService';
 import { calculateScorecard } from './services/evaluator';
-import { BookOpen, MessageSquare } from 'lucide-react';
+import { BookOpen, Headphones, GitBranch, Terminal, Shield } from 'lucide-react';
 
 const INITIAL_CONFIG: LLMConfig = {
   backend: 'heuristic',
@@ -50,7 +50,7 @@ export function App() {
     {
       id: 'welcome-msg',
       sender: 'interviewer',
-      text: `Hello! Welcome to your technical mock interview round. We will be working on "${PROBLEMS[0].title}". Before you jump into writing code, please read the prompt carefully and ask any clarifying questions about inputs, edge cases, or constraints.`,
+      text: `Hello! Welcome to your technical mock interview session. We will be working on "${PROBLEMS[0].title}". Before you jump into writing code, please read the prompt carefully and ask any clarifying questions about inputs, edge cases, or constraints.`,
       timestamp: Date.now(),
       phase: 'CLARIFY'
     }
@@ -140,7 +140,6 @@ export function App() {
 
   const handleChangeLanguage = (newLang: ProgrammingLanguage) => {
     setLanguage(newLang);
-    // Switch to that language's starter code
     setCode(
       newLang === 'javascript'
         ? currentProblem.starterCode.javascript
@@ -149,7 +148,7 @@ export function App() {
   };
 
   const handleResetCode = () => {
-    if (confirm('Are you sure you want to reset your code to the original starter template?')) {
+    if (confirm('Reset code editor to initial starter template?')) {
       setCode(
         language === 'javascript'
           ? currentProblem.starterCode.javascript
@@ -215,7 +214,6 @@ export function App() {
       setTestResults(results);
       setIsRunningTests(false);
 
-      // If in coding or testing phase and all passed, suggest advancing
       const passed = results.filter((r) => r.passed).length;
       if (passed === results.length && phase === 'CODING') {
         setPhase('TESTING');
@@ -294,7 +292,7 @@ export function App() {
       const hintMsg: InterviewMessage = {
         id: `hint-${Date.now()}`,
         sender: 'system',
-        text: `[Hint Level ${nextLevel} (${hintObj.label})]: ${hintObj.text}`,
+        text: `[Hint Tier ${nextLevel} (${hintObj.label})]: ${hintObj.text}`,
         timestamp: Date.now(),
         phase
       };
@@ -310,7 +308,7 @@ export function App() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-[#080c14] text-slate-100 overflow-hidden font-sans select-none">
+    <div className="h-screen w-screen flex flex-col bg-[#090a0f] text-slate-100 overflow-hidden font-sans select-none">
       {/* Top Navbar */}
       <Header
         currentProblem={currentProblem}
@@ -334,38 +332,38 @@ export function App() {
 
       {/* Main Split Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Column: Problem & Interviewer (42% width) */}
-        <div className="w-full lg:w-[42%] flex flex-col border-r border-[#1a2538] bg-[#0b0f19] h-full overflow-hidden">
-          {/* Sub-tabs to toggle between Problem Description and Interviewer Dialogue */}
-          <div className="h-10 px-3 border-b border-[#1a2538] bg-[#0c121e] flex items-center justify-between">
+        {/* Left Column: Problem & Interviewer (40% width) */}
+        <div className="w-full lg:w-[40%] flex flex-col border-r border-[#1c1e28] bg-[#0c0d12] h-full overflow-hidden">
+          {/* Sub-tabs to toggle between Problem Description and Interviewer Console */}
+          <div className="h-9 px-3 border-b border-[#1c1e28] bg-[#0f1017] flex items-center justify-between">
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setLeftTab('interview')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono transition-colors ${
                   leftTab === 'interview'
-                    ? 'bg-[#151f33] text-cyan-300 border border-cyan-500/30'
+                    ? 'bg-[#181a26] text-white border border-[#26293a]'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>Interviewer Dialogue</span>
+                <Headphones className="w-3.5 h-3.5 text-slate-400" />
+                <span>Interviewer Audio/Log</span>
               </button>
 
               <button
                 onClick={() => setLeftTab('problem')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono transition-colors ${
                   leftTab === 'problem'
-                    ? 'bg-[#151f33] text-cyan-300 border border-cyan-500/30'
+                    ? 'bg-[#181a26] text-white border border-[#26293a]'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>Problem Statement</span>
+                <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+                <span>Problem Spec</span>
               </button>
             </div>
 
             <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">
-              Phase: {phase}
+              STAGE: {phase}
             </span>
           </div>
 
@@ -388,10 +386,10 @@ export function App() {
           </div>
         </div>
 
-        {/* Right Column: Code Editor (top 60%) + Test Suite Runner (bottom 40%) */}
-        <div className="hidden lg:flex flex-1 flex-col h-full overflow-hidden bg-[#0b101b]">
-          {/* Code Editor (62% height) */}
-          <div className="h-[62%] border-b border-[#1a2538]">
+        {/* Right Column: Code Editor (top 62%) + Test Suite Runner (bottom 38%) */}
+        <div className="hidden lg:flex flex-1 flex-col h-full overflow-hidden bg-[#0d0e14]">
+          {/* Code Editor */}
+          <div className="h-[62%] border-b border-[#1c1e28]">
             <CodeEditorPanel
               code={code}
               onChangeCode={(val) => setCode(val)}
@@ -403,7 +401,7 @@ export function App() {
             />
           </div>
 
-          {/* Test Results & Output Console (38% height) */}
+          {/* Test Results & Output Console */}
           <div className="h-[38%] overflow-hidden">
             <TestResultsPanel
               problem={currentProblem}
@@ -412,6 +410,39 @@ export function App() {
               onAddCustomTest={(tc) => setCustomTestCases([...customTestCases, tc])}
             />
           </div>
+        </div>
+      </div>
+
+      {/* VS Code / CoderPad Bottom IDE Status Bar */}
+      <div className="h-6 border-t border-[#1c1e28] bg-[#0c0d12] px-3 flex items-center justify-between text-[11px] font-mono text-slate-400 z-20 select-none">
+        {/* Left items */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 text-slate-300">
+            <GitBranch className="w-3 h-3 text-slate-400" />
+            <span>mock-round</span>
+          </div>
+          <span className="hidden sm:inline text-slate-600">|</span>
+          <span className="hidden sm:inline">Spaces: 2</span>
+          <span className="hidden sm:inline text-slate-600">|</span>
+          <span className="hidden sm:inline">UTF-8</span>
+          <span className="hidden sm:inline text-slate-600">|</span>
+          <span className="text-slate-300">{language === 'javascript' ? 'JavaScript' : 'Python'}</span>
+        </div>
+
+        {/* Center item */}
+        <div className="hidden md:flex items-center gap-1.5 text-slate-300">
+          <Terminal className="w-3 h-3 text-emerald-400" />
+          <span>Evaluation: Stage {phase}</span>
+        </div>
+
+        {/* Right items */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            <Shield className="w-3 h-3 text-slate-400" />
+            <span className="text-slate-300">100% Offline</span>
+          </div>
+          <span className="text-slate-600">|</span>
+          <span className="text-slate-300">Engine: {config.backend.toUpperCase()}</span>
         </div>
       </div>
 

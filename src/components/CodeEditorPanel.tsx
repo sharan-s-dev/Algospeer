@@ -3,7 +3,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { Play, RotateCcw, Copy, Check, Code2 } from 'lucide-react';
+import { Play, RotateCcw, Copy, Check, FileCode } from 'lucide-react';
 import type { ProgrammingLanguage } from '../types/interview';
 
 interface CodeEditorPanelProps {
@@ -27,7 +27,7 @@ export const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({
 }) => {
   const [copied, setCopied] = React.useState(false);
 
-  // Keyboard shortcut Ctrl+Enter to run tests
+  // Keyboard shortcut Ctrl+Enter or Cmd+Enter to run tests
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -50,31 +50,40 @@ export const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#0b101b] overflow-hidden">
-      {/* Editor Toolbar */}
-      <div className="h-10 px-3 border-b border-[#1a2538] bg-[#0d1424] flex items-center justify-between select-none">
+    <div className="h-full flex flex-col bg-[#0d0e14] overflow-hidden">
+      {/* Editor Top Toolbar / Tab Bar */}
+      <div className="h-9 px-3 border-b border-[#1c1e28] bg-[#0c0d12] flex items-center justify-between select-none">
+        {/* Left: Active File Tab & Runtime Tag */}
         <div className="flex items-center gap-2">
-          <Code2 className="w-4 h-4 text-cyan-400" />
-          <span className="text-xs font-bold text-slate-200">Solution Code</span>
+          {/* Active File Tab */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-t-md bg-[#0d0e14] border-t border-x border-[#1c1e28] text-xs font-mono text-slate-200">
+            <FileCode className="w-3.5 h-3.5 text-emerald-400" />
+            <span>{language === 'javascript' ? 'solution.js' : 'solution.py'}</span>
+          </div>
 
-          {/* Language Selector */}
-          <div className="flex items-center bg-[#131b2c] p-0.5 rounded-lg border border-[#1e2a3f] ml-2">
+          {/* Compiler Version Info */}
+          <span className="text-[10px] font-mono text-slate-400 px-1.5 py-0.5 rounded bg-[#12131b] border border-[#1b1d28] hidden sm:inline">
+            {language === 'javascript' ? 'v8 / Node 20.x' : 'Pyodide 3.12'}
+          </span>
+
+          {/* Language Switcher */}
+          <div className="flex items-center bg-[#101118] p-0.5 rounded-md border border-[#1e202c] ml-1">
             <button
               onClick={() => onChangeLanguage('javascript')}
-              className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-colors ${
+              className={`px-2 py-0.5 rounded text-[10.5px] font-mono transition-colors ${
                 language === 'javascript'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#1e212c] text-white font-medium border border-[#2b2e3e]'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               JavaScript
             </button>
             <button
               onClick={() => onChangeLanguage('python')}
-              className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-colors ${
+              className={`px-2 py-0.5 rounded text-[10.5px] font-mono transition-colors ${
                 language === 'python'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#1e212c] text-white font-medium border border-[#2b2e3e]'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               Python
@@ -82,36 +91,36 @@ export const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({
           </div>
         </div>
 
-        {/* Toolbar Action Buttons */}
-        <div className="flex items-center gap-2">
+        {/* Right: Actions & Run Button */}
+        <div className="flex items-center gap-1.5">
           <button
             onClick={onResetCode}
-            title="Reset code to original starter template"
-            className="btn btn-ghost text-xs text-slate-400 hover:text-white py-1 px-2"
+            title="Reset code template"
+            className="btn btn-ghost text-xs text-slate-400 hover:text-white py-1 px-2 font-mono"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Reset</span>
+            <RotateCcw className="w-3 h-3" />
+            <span className="hidden sm:inline text-[11px]">Reset</span>
           </button>
 
           <button
             onClick={handleCopy}
             title="Copy solution code"
-            className="btn btn-ghost text-xs text-slate-400 hover:text-white py-1 px-2"
+            className="btn btn-ghost text-xs text-slate-400 hover:text-white py-1 px-2 font-mono"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-            <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy'}</span>
+            {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+            <span className="hidden sm:inline text-[11px]">{copied ? 'Copied' : 'Copy'}</span>
           </button>
 
-          {/* Run Tests Button */}
+          {/* Run Tests (Tactile Emerald Execution Button) */}
           <button
             onClick={onRunTests}
             disabled={isRunningTests}
-            className="btn btn-success text-xs py-1 px-3 shadow-md"
-            title="Execute test cases (Ctrl + Enter)"
+            className="btn btn-action-run text-xs py-1 px-3"
+            title="Execute test suite (Ctrl + Enter)"
           >
-            <Play className={`w-3.5 h-3.5 ${isRunningTests ? 'animate-spin' : ''}`} />
-            <span>{isRunningTests ? 'Running...' : 'Run Tests'}</span>
-            <span className="hidden md:inline text-[10px] opacity-75 font-mono ml-1">Ctrl+↵</span>
+            <Play className={`w-3 h-3 ${isRunningTests ? 'animate-spin' : ''}`} />
+            <span>{isRunningTests ? 'Running...' : 'Run Code'}</span>
+            <kbd className="ml-1 bg-black/20 text-[#042f1a] border-emerald-700/40 text-[9px]">⌃↵</kbd>
           </button>
         </div>
       </div>

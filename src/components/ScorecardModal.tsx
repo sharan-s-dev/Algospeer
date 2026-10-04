@@ -8,8 +8,8 @@ import {
   Copy,
   Check,
   X,
-  Zap,
-  RotateCcw
+  RotateCcw,
+  BarChart2
 } from 'lucide-react';
 import type { InterviewScorecard, Problem, ProgrammingLanguage } from '../types/interview';
 import { generateMarkdownReport } from '../services/evaluator';
@@ -39,8 +39,8 @@ export const ScorecardModal: React.FC<ScorecardModalProps> = ({
     if (isOpen && scorecard) {
       if (scorecard.hiringDecision === 'Strong Hire' || scorecard.hiringDecision === 'Hire') {
         confetti({
-          particleCount: 100,
-          spread: 70,
+          particleCount: 80,
+          spread: 60,
           origin: { y: 0.6 }
         });
       }
@@ -70,15 +70,15 @@ export const ScorecardModal: React.FC<ScorecardModalProps> = ({
   const getDecisionBadge = (decision: string) => {
     switch (decision) {
       case 'Strong Hire':
-        return { color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40', label: 'Strong Hire' };
+        return { color: 'bg-[#10231b] text-emerald-300 border-[#1d4d38]', label: 'Strong Hire' };
       case 'Hire':
-        return { color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40', label: 'Hire' };
+        return { color: 'bg-[#111e33] text-blue-300 border-[#1e3a63]', label: 'Hire' };
       case 'Lean Hire':
-        return { color: 'bg-amber-500/20 text-amber-300 border-amber-500/40', label: 'Lean Hire' };
+        return { color: 'bg-[#241f12] text-amber-300 border-[#523f1c]', label: 'Lean Hire' };
       case 'Lean No Hire':
-        return { color: 'bg-orange-500/20 text-orange-300 border-orange-500/40', label: 'Lean No Hire' };
+        return { color: 'bg-[#281a14] text-orange-300 border-[#5e2b17]', label: 'Lean No Hire' };
       default:
-        return { color: 'bg-rose-500/20 text-rose-300 border-rose-500/40', label: 'No Hire' };
+        return { color: 'bg-[#281418] text-rose-300 border-[#5e1927]', label: 'No Hire' };
     }
   };
 
@@ -91,96 +91,96 @@ export const ScorecardModal: React.FC<ScorecardModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-3xl rounded-2xl bg-[#0e1524] border border-[#23324d] shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+      <div className="w-full max-w-3xl rounded-xl bg-[#0e0f15] border border-[#20222f] shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#1c2638] bg-[#121c2e] flex items-center justify-between">
+        <div className="px-5 py-3.5 border-b border-[#1c1e2a] bg-[#111219] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
-              <Award className="w-6 h-6" />
+            <div className="w-8 h-8 rounded-md bg-[#161822] border border-[#272a3b] flex items-center justify-center text-slate-200">
+              <Award className="w-4 h-4 text-amber-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-white">Interview Evaluation Scorecard</h2>
-                <span className={`badge text-xs px-2.5 py-0.5 border ${decisionBadge.color}`}>
+                <h2 className="text-sm font-bold text-white font-sans">Technical Evaluation Scorecard</h2>
+                <span className={`badge text-xs px-2 py-0.5 border font-mono ${decisionBadge.color}`}>
                   {decisionBadge.label}
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
-                Evaluation for "{problem.title}" ({problem.difficulty})
+              <p className="text-[11px] text-slate-400 font-mono">
+                Candidate Evaluation • {problem.title} ({problem.difficulty})
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#1a263c] transition-colors"
+            className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-[#1a1c27] transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-5 select-text">
-          {/* Top Summary Banner */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="rounded-xl bg-[#131b2d] border border-[#1e2a40] p-3.5 text-center">
-              <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-                Overall Score
+        <div className="flex-1 overflow-y-auto p-5 space-y-4 select-text">
+          {/* Top Summary Metrics */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <div className="rounded-md bg-[#11121a] border border-[#1d202c] p-3 text-center">
+              <div className="text-[10.5px] font-mono text-slate-400 uppercase tracking-wider mb-1">
+                Evaluation Score
               </div>
-              <div className="text-2xl font-extrabold text-cyan-400 font-mono">
+              <div className="text-2xl font-bold text-white font-mono">
                 {scorecard.overallScore}<span className="text-xs text-slate-500 font-normal">/100</span>
               </div>
             </div>
 
-            <div className="rounded-xl bg-[#131b2d] border border-[#1e2a40] p-3.5 text-center">
-              <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-                Test Cases
+            <div className="rounded-md bg-[#11121a] border border-[#1d202c] p-3 text-center">
+              <div className="text-[10.5px] font-mono text-slate-400 uppercase tracking-wider mb-1">
+                Test Suite
               </div>
-              <div className="text-2xl font-extrabold text-emerald-400 font-mono">
+              <div className="text-2xl font-bold text-emerald-400 font-mono">
                 {scorecard.testCasesPassed}<span className="text-xs text-slate-500 font-normal">/{scorecard.totalTestCases}</span>
               </div>
             </div>
 
-            <div className="rounded-xl bg-[#131b2d] border border-[#1e2a40] p-3.5 text-center">
-              <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-                Duration
+            <div className="rounded-md bg-[#11121a] border border-[#1d202c] p-3 text-center">
+              <div className="text-[10.5px] font-mono text-slate-400 uppercase tracking-wider mb-1">
+                Time Elapsed
               </div>
-              <div className="text-2xl font-extrabold text-purple-400 font-mono">
+              <div className="text-2xl font-bold text-slate-200 font-mono">
                 {formatTime(scorecard.timeElapsedSeconds)}
               </div>
             </div>
 
-            <div className="rounded-xl bg-[#131b2d] border border-[#1e2a40] p-3.5 text-center">
-              <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+            <div className="rounded-md bg-[#11121a] border border-[#1d202c] p-3 text-center">
+              <div className="text-[10.5px] font-mono text-slate-400 uppercase tracking-wider mb-1">
                 Hints Used
               </div>
-              <div className="text-2xl font-extrabold text-amber-400 font-mono">
+              <div className="text-2xl font-bold text-amber-400 font-mono">
                 {scorecard.hintsUsed}
               </div>
             </div>
           </div>
 
-          {/* Rubric Breakdown */}
-          <div className="rounded-xl bg-[#121929] border border-[#1f2b40] p-4 space-y-3.5">
-            <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Competency Rubric Assessment</span>
-            </h3>
+          {/* Competency Rubric Assessment */}
+          <div className="rounded-md bg-[#11121a] border border-[#1d202c] p-4 space-y-3">
+            <div className="text-xs font-mono font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-[#181a24]">
+              <BarChart2 className="w-3.5 h-3.5 text-slate-400" />
+              <span>Competency Dimension Assessment</span>
+            </div>
 
             {Object.values(scorecard.dimensions).map((dim, idx) => {
               const pct = (dim.score / dim.maxScore) * 100;
               return (
-                <div key={idx} className="space-y-1.5">
+                <div key={idx} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-slate-200">{dim.name}</span>
-                    <span className="font-mono text-cyan-300 font-bold">
+                    <span className="font-medium text-slate-200 font-sans">{dim.name}</span>
+                    <span className="font-mono text-slate-300 font-semibold text-[11px]">
                       {dim.score} / {dim.maxScore}
                     </span>
                   </div>
                   {/* Progress bar */}
-                  <div className="w-full h-2 rounded-full bg-[#0a0f18] overflow-hidden">
+                  <div className="w-full h-1.5 rounded-full bg-[#161722] overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500"
+                      className="h-full rounded-full bg-emerald-500 transition-all duration-300"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -191,17 +191,17 @@ export const ScorecardModal: React.FC<ScorecardModalProps> = ({
           </div>
 
           {/* Strengths & Growth Areas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Strengths */}
-            <div className="rounded-xl bg-emerald-950/20 border border-emerald-900/30 p-4 space-y-2">
-              <div className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4" />
+            <div className="rounded-md bg-[#10231b]/50 border border-[#1d4d38] p-3.5 space-y-2">
+              <div className="text-xs font-semibold text-emerald-300 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Demonstrated Strengths</span>
               </div>
-              <ul className="space-y-1.5 text-xs text-slate-200">
+              <ul className="space-y-1 text-[11.5px] text-slate-200 font-sans">
                 {scorecard.strengths.map((str, i) => (
                   <li key={i} className="flex items-start gap-1.5">
-                    <span className="text-emerald-400 font-bold">•</span>
+                    <span className="text-emerald-400 font-bold select-none">•</span>
                     <span>{str}</span>
                   </li>
                 ))}
@@ -209,15 +209,15 @@ export const ScorecardModal: React.FC<ScorecardModalProps> = ({
             </div>
 
             {/* Areas to Improve */}
-            <div className="rounded-xl bg-amber-950/20 border border-amber-900/30 p-4 space-y-2">
-              <div className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
-                <TrendingUp className="w-4 h-4" />
-                <span>Areas for Development</span>
+            <div className="rounded-md bg-[#241f12]/50 border border-[#523f1c] p-3.5 space-y-2">
+              <div className="text-xs font-semibold text-amber-300 flex items-center gap-1.5">
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>Areas for Growth</span>
               </div>
-              <ul className="space-y-1.5 text-xs text-slate-200">
+              <ul className="space-y-1 text-[11.5px] text-slate-200 font-sans">
                 {scorecard.areasToImprove.map((area, i) => (
                   <li key={i} className="flex items-start gap-1.5">
-                    <span className="text-amber-400 font-bold">•</span>
+                    <span className="text-amber-400 font-bold select-none">•</span>
                     <span>{area}</span>
                   </li>
                 ))}
@@ -227,12 +227,12 @@ export const ScorecardModal: React.FC<ScorecardModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[#1c2638] bg-[#0c1322] flex items-center justify-between">
+        <div className="px-5 py-3 border-t border-[#1c1e2a] bg-[#111219] flex items-center justify-between">
           <button
             onClick={onRestartRound}
             className="btn btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-3 h-3 text-slate-400" />
             <span>Retake Interview</span>
           </button>
 
@@ -240,10 +240,10 @@ export const ScorecardModal: React.FC<ScorecardModalProps> = ({
             <button
               onClick={handleCopyReport}
               className="btn btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
-              title="Copy markdown debrief to clipboard"
+              title="Copy markdown debrief"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copied ? 'Copied' : 'Copy Report'}</span>
+              {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-400" />}
+              <span>{copied ? 'Copied' : 'Copy Debrief'}</span>
             </button>
 
             <button
@@ -251,8 +251,8 @@ export const ScorecardModal: React.FC<ScorecardModalProps> = ({
               className="btn btn-primary text-xs py-1.5 px-3 flex items-center gap-1.5"
               title="Download markdown scorecard report"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download (.md)</span>
+              <Download className="w-3 h-3" />
+              <span>Export Report (.md)</span>
             </button>
           </div>
         </div>
