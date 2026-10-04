@@ -1,10 +1,6 @@
+*This is a submission for the [Hacktoberfest Weekend Challenge: Build for a Friend](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01)*
+
 # AlgosPeer: An Offline, Local-Inference DSA Mock Interview Agent Built for My Roommate
-
-> **Engineered for peers and roommates preparing for early-career software engineering technical evaluations (FAANG, Big Tech, and high-growth tech startups).**
-
-🔗 **Repository:** [https://github.com/sharan-s-dev/Algospeer](https://github.com/sharan-s-dev/Algospeer)  
-🌐 **Live Demo:** [https://sharan-s-dev.github.io/Algospeer/](https://sharan-s-dev.github.io/Algospeer/)  
-**100% Offline & Private:** Zero cloud API keys required. Operates completely offline using client-side WebGPU (WebLLM), local Ollama/LM Studio endpoints, or an instant-execution offline heuristic expert engine.
 
 ---
 
@@ -36,7 +32,8 @@ Preparing for technical coding rounds is notorious for being high-stress and iso
 
 ## Demo
 
-- **Local Development / Web Access:** [http://localhost:5173/](http://localhost:5173/)
+- 🌐 **Live Deployed App:** [https://sharan-s-dev.github.io/Algospeer/](https://sharan-s-dev.github.io/Algospeer/)
+- **Local Development / Offline Access:** [http://localhost:5173/](http://localhost:5173/)
 - **Curated Interview Problem Bank:** 8 classic, high-frequency interview patterns (Two Sum, Valid Parentheses, Best Time to Buy and Sell Stock, Longest Substring Without Repeating Characters, Merge Intervals, Number of Islands, Coin Change, and Search in Rotated Sorted Array).
 - **Dual Perspective:** Candidates code in an uncluttered IDE while the interviewer / roommate HUD runs synchronously.
 
