@@ -1,6 +1,6 @@
 *This is a submission for the [Hacktoberfest Weekend Challenge: Build for a Friend](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01)*
 
-# AlgosPeer: An Interactive DSA Mock Interview Co-Pilot Built for My Roommate
+# AlgosPeer: An Interactive DSA Mock Interview Co-Pilot Built for My Peers
 
 ---
 
